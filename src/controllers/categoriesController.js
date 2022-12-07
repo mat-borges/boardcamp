@@ -1,7 +1,30 @@
+import { connection } from '../db/db.js';
+
 export async function getCategories(req, res) {
-	res.sendStatus(501);
+	try {
+		const categories = await connection.query('SELECT * FROM categories;');
+		res.send(categories.rows);
+	} catch (err) {
+		console.log(err);
+		res.sendStatus(500);
+	}
 }
 
 export async function newCategory(req, res) {
-	res.sendStatus(501);
+	const { name } = req.body;
+
+	if (!name) return res.sendStatus(400);
+
+	try {
+		const category = await connection.query('SELECT * FROM categories WHERE name=$1;', [name]);
+		const categoryExists = category.rows.length !== 0;
+
+		if (categoryExists) return res.sendStatus(409);
+
+		await connection.query('INSERT INTO categories (name) VALUES ($1);', [name]);
+		res.sendStatus(201);
+	} catch (err) {
+		console.log(err);
+		res.sendStatus(500);
+	}
 }
