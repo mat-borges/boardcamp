@@ -21,7 +21,7 @@ export async function newGame(req, res) {
 	const { game } = res.locals;
 	try {
 		await connection.query(
-			'INSERT INTO games (name, image, "stockTotal", "categoryId", "pricePerDay") VALUES ($1, $2, $3, $4, $5)',
+			'INSERT INTO games (name, image, "stockTotal", "categoryId", "pricePerDay") VALUES ($1, $2, $3, $4, $5);',
 			[game.name, game.image, game.stockTotal, game.categoryId, game.pricePerDay]
 		);
 		res.sendStatus(201);
