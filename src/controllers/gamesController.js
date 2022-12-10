@@ -3,14 +3,14 @@ import { connection } from '../db/db.js';
 export async function getGames(req, res) {
 	const { name } = req.query;
 	try {
+		let games;
 		if (name) {
 			const filter = `${name}%`;
-			const filteredGames = await connection.query('SELECT * FROM games WHERE name ILIKE $1;', [filter]);
-			res.send(filteredGames.rows);
+			games = await connection.query('SELECT * FROM games WHERE name ILIKE $1;', [filter]);
 		} else {
-			const games = await connection.query('SELECT * FROM games;');
-			res.send(games.rows);
+			games = await connection.query('SELECT * FROM games;');
 		}
+		res.send(games.rows);
 	} catch (err) {
 		console.log(err);
 		res.sendStatus(500);
