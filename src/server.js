@@ -6,6 +6,10 @@ import customersRouter from './routes/customersRouter.js';
 import dotenv from 'dotenv';
 import gamesRouter from './routes/gamesRouter.js';
 import rentalsRouter from './routes/rentalsRouter.js';
+import { stripHtml } from 'string-strip-html';
+
+export const cleanStringData = (string) =>
+	stripHtml(JSON.stringify(string)?.replace(/"|"/gi, '')).result.trim();
 
 dotenv.config();
 
