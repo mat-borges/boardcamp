@@ -1,3 +1,4 @@
+import { checkCpf, validateCustomerSchema } from '../middlewares/customerValidationsMiddleware.js';
 import {
 	getCustomerById,
 	getCustomers,
@@ -6,13 +7,12 @@ import {
 } from '../controllers/customersControllers.js';
 
 import { Router } from 'express';
-import { validateCustomerSchema } from '../middlewares/customerSchemaValidation.js';
 
 const router = Router();
 
 router.get('/customers', getCustomers);
 router.get('/customers/:id', getCustomerById);
-router.post('/customers', validateCustomerSchema, newCustomer);
-router.put('/customers/:id', updateCustomer);
+router.post('/customers', validateCustomerSchema, checkCpf, newCustomer);
+router.put('/customers/:id', validateCustomerSchema, checkCpf, updateCustomer);
 
 export default router;
