@@ -7,17 +7,24 @@ export async function getRentals(req, res) {
 
 	try {
 		let rentals;
+		const query = `SELECT rentals.*,
+					json_build_object('id',customers.id,'name',customers.name) AS customer,
+				 	json_build_object('id',games.id,'name', games.name,'categoryId', games."categoryId", 'categoryName', categories.name) AS game
+					FROM rentals
+						JOIN customers ON rentals."customerId"=customers.id
+						JOIN games ON rentals."gameId"=games.id
+						JOIN categories ON games."categoryId" = categories.id`;
 		if (customerId && gameId) {
-			rentals = await connection.query('SELECT * FROM rentals WHERE "customerId"=$1 AND "gameId"=$2;', [
-				customerId,
-				gameId,
-			]);
+			rentals = await connection.query(
+				`${query} WHERE rentals."customerId" = $1 AND rentals."gameId" = $2;`,
+				[customerId, gameId]
+			);
 		} else if (customerId) {
-			rentals = await connection.query('SELECT * FROM rentals WHERE "customerId"=$1;', [customerId]);
+			rentals = await connection.query(`${query} WHERE "customerId"=$1;`, [customerId]);
 		} else if (gameId) {
-			rentals = await connection.query('SELECT * FROM rentals WHERE "gameId"=$1;', [gameId]);
+			rentals = await connection.query(`${query} WHERE "gameId"=$1;`, [gameId]);
 		} else {
-			rentals = await connection.query('SELECT * FROM rentals;');
+			rentals = await connection.query(`${query};`);
 		}
 		res.send(rentals.rows);
 	} catch (err) {
