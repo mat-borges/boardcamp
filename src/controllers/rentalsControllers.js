@@ -26,6 +26,7 @@ export async function getRentals(req, res) {
 }
 
 export async function newRental(req, res) {
+	const { customerId, gameId, daysRented } = res.locals.rental;
 	res.sendStatus(501);
 }
 
