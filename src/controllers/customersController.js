@@ -10,44 +10,44 @@ export async function getCustomers(req, res) {
 		if (cpf) {
 			filter = `${cpf}%`;
 		}
-		switch (cpf || limit || offset) {
-			case cpf && limit && offset:
-				return {
-					string: `SELECT * FROM customers WHERE cpf ILIKE $1 LIMIT $2 OFFSET $3;`,
-					params: [filter, limit, offset],
-				};
-			case cpf && limit:
-				return {
-					string: `SELECT * FROM customers WHERE cpf ILIKE $1 LIMIT $2;`,
-					params: [filter, limit],
-				};
-			case cpf && offset:
-				return {
-					string: `SELECT * FROM customers WHERE cpf ILIKE $1 OFFSET $2;`,
-					params: [filter, offset],
-				};
-			case cpf:
-				return {
-					string: `SELECT * FROM customers WHERE cpf ILIKE $1;`,
-					params: [filter],
-				};
-			case limit && offset:
-				return {
-					string: `SELECT * FROM customers ORDER BY id LIMIT $1 OFFSET $2;`,
-					params: [limit, offset],
-				};
-			case limit:
-				return {
-					string: `SELECT * FROM customers ORDER BY id LIMIT $1 ;`,
-					params: [limit],
-				};
-			case offset:
-				return {
-					string: `SELECT * FROM customers ORDER BY id OFFSET $1 ;`,
-					params: [offset],
-				};
-			default:
-				return { string: 'SELECT * FROM customers ORDER BY id;', params: [] };
+
+		if (cpf && limit && offset) {
+			return {
+				string: `SELECT * FROM customers WHERE cpf ILIKE $1 LIMIT $2 OFFSET $3;`,
+				params: [filter, limit, offset],
+			};
+		} else if (cpf && limit) {
+			return {
+				string: `SELECT * FROM customers WHERE cpf ILIKE $1 LIMIT $2;`,
+				params: [filter, limit],
+			};
+		} else if (cpf && offset) {
+			return {
+				string: `SELECT * FROM customers WHERE cpf ILIKE $1 OFFSET $2;`,
+				params: [filter, offset],
+			};
+		} else if (cpf) {
+			return {
+				string: `SELECT * FROM customers WHERE cpf ILIKE $1;`,
+				params: [filter],
+			};
+		} else if (limit && offset) {
+			return {
+				string: `SELECT * FROM customers ORDER BY id LIMIT $1 OFFSET $2;`,
+				params: [limit, offset],
+			};
+		} else if (limit) {
+			return {
+				string: `SELECT * FROM customers ORDER BY id LIMIT $1 ;`,
+				params: [limit],
+			};
+		} else if (offset) {
+			return {
+				string: `SELECT * FROM customers ORDER BY id OFFSET $1 ;`,
+				params: [offset],
+			};
+		} else {
+			return { string: 'SELECT * FROM customers ORDER BY id;', params: [] };
 		}
 	}
 

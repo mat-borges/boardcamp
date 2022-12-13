@@ -5,26 +5,26 @@ export async function getCategories(req, res) {
 	const offset = parseInt(req.query.offset);
 
 	function queryStrings() {
-		switch (limit || offset) {
-			case limit && offset:
-				return {
-					string: `SELECT * FROM categories ORDER BY id LIMIT $1 OFFSET $2;`,
-					params: [limit, offset],
-				};
-			case limit:
-				return {
-					string: `SELECT * FROM categories ORDER BY id LIMIT $1 ;`,
-					params: [limit],
-				};
-			case offset:
-				return {
-					string: `SELECT * FROM categories ORDER BY id OFFSET $1 ;`,
-					params: [offset],
-				};
-			default:
-				return { string: 'SELECT * FROM categories ORDER BY id;', params: [] };
+		if (limit && offset) {
+			return {
+				string: `SELECT * FROM categories ORDER BY id LIMIT $1 OFFSET $2;`,
+				params: [limit, offset],
+			};
+		} else if (limit) {
+			return {
+				string: `SELECT * FROM categories ORDER BY id LIMIT $1 ;`,
+				params: [limit],
+			};
+		} else if (offset) {
+			return {
+				string: `SELECT * FROM categories ORDER BY id OFFSET $1 ;`,
+				params: [offset],
+			};
+		} else {
+			return { string: 'SELECT * FROM categories ORDER BY id;', params: [] };
 		}
 	}
+
 	try {
 		const categories = await connection.query(`${queryStrings().string}`, queryStrings().params);
 		res.send(categories.rows);

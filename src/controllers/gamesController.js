@@ -10,44 +10,43 @@ export async function getGames(req, res) {
 		if (name) {
 			filter = `${name}%`;
 		}
-		switch (name || limit || offset) {
-			case name && limit && offset:
-				return {
-					string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2 OFFSET $3;`,
-					params: [filter, limit, offset],
-				};
-			case name && limit:
-				return {
-					string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2;`,
-					params: [filter, limit],
-				};
-			case name && offset:
-				return {
-					string: `SELECT * FROM games WHERE name ILIKE $1 OFFSET $2;`,
-					params: [filter, offset],
-				};
-			case name:
-				return {
-					string: `SELECT * FROM games WHERE name ILIKE $1;`,
-					params: [filter],
-				};
-			case limit && offset:
-				return {
-					string: `SELECT * FROM games ORDER BY id LIMIT $1 OFFSET $2;`,
-					params: [limit, offset],
-				};
-			case limit:
-				return {
-					string: `SELECT * FROM games ORDER BY id LIMIT $1 ;`,
-					params: [limit],
-				};
-			case offset:
-				return {
-					string: `SELECT * FROM games ORDER BY id OFFSET $1 ;`,
-					params: [offset],
-				};
-			default:
-				return { string: `SELECT * FROM games ORDER BY id;`, params: [] };
+		if (name && limit && offset) {
+			return {
+				string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2 OFFSET $3;`,
+				params: [filter, limit, offset],
+			};
+		} else if (name && limit) {
+			return {
+				string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2;`,
+				params: [filter, limit],
+			};
+		} else if (name && offset) {
+			return {
+				string: `SELECT * FROM games WHERE name ILIKE $1 OFFSET $2;`,
+				params: [filter, offset],
+			};
+		} else if (name) {
+			return {
+				string: `SELECT * FROM games WHERE name ILIKE $1;`,
+				params: [filter],
+			};
+		} else if (limit && offset) {
+			return {
+				string: `SELECT * FROM games ORDER BY id LIMIT $1 OFFSET $2;`,
+				params: [limit, offset],
+			};
+		} else if (limit) {
+			return {
+				string: `SELECT * FROM games ORDER BY id LIMIT $1 ;`,
+				params: [limit],
+			};
+		} else if (offset) {
+			return {
+				string: `SELECT * FROM games ORDER BY id OFFSET $1 ;`,
+				params: [offset],
+			};
+		} else {
+			return { string: `SELECT * FROM games ORDER BY id;`, params: [] };
 		}
 	}
 
