@@ -2,15 +2,53 @@ import { connection } from '../db/db.js';
 
 export async function getCustomers(req, res) {
 	const { cpf } = req.query;
+	const limit = parseInt(req.query.limit);
+	const offset = parseInt(req.query.offset);
+
+	function queryStrings() {
+		switch (cpf || limit || offset) {
+			case cpf && limit && offset:
+				return {
+					string: `SELECT * FROM customers WHERE cpf ILIKE $1; LIMIT $2 OFFSET $3;`,
+					params: [cpf, limit, offset],
+				};
+			case cpf && limit:
+				return {
+					string: `SELECT * FROM customers WHERE cpf ILIKE $1; LIMIT $2;`,
+					params: [cpf, limit],
+				};
+			case cpf && offset:
+				return {
+					string: `SELECT * FROM customers WHERE cpf ILIKE $1; OFFSET $2;`,
+					params: [cpf, offset],
+				};
+			case cpf:
+				return {
+					string: `SELECT * FROM customers WHERE cpf ILIKE $1;;`,
+					params: [cpf],
+				};
+			case limit && offset:
+				return {
+					string: `SELECT * FROM customers ORDER BY id LIMIT $1 OFFSET $2;`,
+					params: [limit, offset],
+				};
+			case limit:
+				return {
+					string: `SELECT * FROM customers ORDER BY id LIMIT $1 ;`,
+					params: [limit],
+				};
+			case offset:
+				return {
+					string: `SELECT * FROM customers ORDER BY id OFFSET $1 ;`,
+					params: [offset],
+				};
+			default:
+				return { string: 'SELECT * FROM customers ORDER BY id;', params: [] };
+		}
+	}
 
 	try {
-		let customers;
-		if (cpf) {
-			const filter = `${cpf}%`;
-			customers = await connection.query('SELECT * FROM customers WHERE cpf ILIKE $1;', [filter]);
-		} else {
-			customers = await connection.query('SELECT * FROM customers;');
-		}
+		const customers = await connection.query(`${queryStrings().string}`, queryStrings().params);
 		res.send(customers.rows);
 	} catch (err) {
 		console.log(err);
