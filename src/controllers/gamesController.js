@@ -52,7 +52,19 @@ export async function getGames(req, res) {
 
 	try {
 		const games = await connection.query(`${queryStrings().string}`, queryStrings().params);
-		res.send(games.rows);
+		const rentals = await connection.query('SELECT * FROM rentals;');
+
+		let countRentals = [];
+		for (let game of games.rows) {
+			let rentalsCount = 0;
+			for (let rental of rentals.rows) {
+				if (game.id === rental.gameId) {
+					rentalsCount++;
+				}
+			}
+			countRentals.push({ ...game, rentalsCount });
+		}
+		res.send(countRentals);
 	} catch (err) {
 		console.log(err);
 		res.sendStatus(500);
