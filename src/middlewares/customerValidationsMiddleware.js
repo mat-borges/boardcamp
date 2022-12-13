@@ -4,11 +4,12 @@ import { customerSchema } from '../models/customerSchema.js';
 
 export async function validateCustomerSchema(req, res, next) {
 	const { name, phone, cpf, birthday } = req.body;
+
 	const customer = {
 		name: cleanStringData(name),
-		phone: cleanStringData(phone),
-		cpf: cleanStringData(cpf),
-		birthday: cleanStringData(birthday),
+		phone: cleanStringData(phone).replace(/[^\w\s]/gi, ''),
+		cpf: cleanStringData(cpf).replace(/[^\w\s]/gi, ''),
+		birthday: cleanStringData(birthday).split('/').reverse().join('-'),
 	};
 
 	const { error } = customerSchema.validate(customer, { abortEarly: false });
