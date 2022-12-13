@@ -6,26 +6,30 @@ export async function getCustomers(req, res) {
 	const offset = parseInt(req.query.offset);
 
 	function queryStrings() {
+		let filter;
+		if (cpf) {
+			filter = `${cpf}%`;
+		}
 		switch (cpf || limit || offset) {
 			case cpf && limit && offset:
 				return {
-					string: `SELECT * FROM customers WHERE cpf ILIKE $1; LIMIT $2 OFFSET $3;`,
-					params: [cpf, limit, offset],
+					string: `SELECT * FROM customers WHERE cpf ILIKE $1 LIMIT $2 OFFSET $3;`,
+					params: [filter, limit, offset],
 				};
 			case cpf && limit:
 				return {
-					string: `SELECT * FROM customers WHERE cpf ILIKE $1; LIMIT $2;`,
-					params: [cpf, limit],
+					string: `SELECT * FROM customers WHERE cpf ILIKE $1 LIMIT $2;`,
+					params: [filter, limit],
 				};
 			case cpf && offset:
 				return {
-					string: `SELECT * FROM customers WHERE cpf ILIKE $1; OFFSET $2;`,
-					params: [cpf, offset],
+					string: `SELECT * FROM customers WHERE cpf ILIKE $1 OFFSET $2;`,
+					params: [filter, offset],
 				};
 			case cpf:
 				return {
-					string: `SELECT * FROM customers WHERE cpf ILIKE $1;;`,
-					params: [cpf],
+					string: `SELECT * FROM customers WHERE cpf ILIKE $1;`,
+					params: [filter],
 				};
 			case limit && offset:
 				return {

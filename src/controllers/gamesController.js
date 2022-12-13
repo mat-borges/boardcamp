@@ -6,26 +6,30 @@ export async function getGames(req, res) {
 	const offset = parseInt(req.query.offset);
 
 	function queryStrings() {
+		let filter;
+		if (name) {
+			filter = `${name}%`;
+		}
 		switch (name || limit || offset) {
 			case name && limit && offset:
 				return {
 					string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2 OFFSET $3;`,
-					params: [name, limit, offset],
+					params: [filter, limit, offset],
 				};
 			case name && limit:
 				return {
 					string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2;`,
-					params: [name, limit],
+					params: [filter, limit],
 				};
 			case name && offset:
 				return {
 					string: `SELECT * FROM games WHERE name ILIKE $1 OFFSET $2;`,
-					params: [name, offset],
+					params: [filter, offset],
 				};
 			case name:
 				return {
 					string: `SELECT * FROM games WHERE name ILIKE $1;`,
-					params: [name],
+					params: [filter],
 				};
 			case limit && offset:
 				return {
@@ -49,7 +53,6 @@ export async function getGames(req, res) {
 
 	try {
 		const games = await connection.query(`${queryStrings().string}`, queryStrings().params);
-
 		res.send(games.rows);
 	} catch (err) {
 		console.log(err);
