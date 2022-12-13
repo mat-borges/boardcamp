@@ -22,4 +22,5 @@ app.use(customersRouter);
 app.use(gamesRouter);
 app.use(rentalsRouter);
 
-app.listen(process.env.PORT, () => console.log(`Running server on http://localhost:${process.env.PORT}`));
+const port = process.env.PORT;
+app.listen(port, () => console.log(`Running server on http://localhost:${port}`));
