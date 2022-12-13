@@ -56,7 +56,7 @@ export async function returnRental(req, res) {
 	const { id } = req.params;
 	const returnDate = dayjs().format('YYYY-MM-DD');
 	try {
-		const getRental = await connection.query(`SELECT * FROM rentals;`);
+		const getRental = await connection.query(`SELECT * FROM rentals WHERE id=$1;`, [id]);
 
 		if (getRental.rows[0].returnDate !== null) return res.sendStatus(400);
 
@@ -67,7 +67,7 @@ export async function returnRental(req, res) {
 		const daysDelay = (dayjs(returnDate.valueOf()) - rentDate) / 1000 / 3600 / 24 - daysRented;
 		const delayFee = Math.floor(daysDelay <= 0 ? 0 : daysDelay) * originalPrice;
 
-		await connection.query(`UPDATE rentals SET "returnDate"=$1, "delayFee"=$2 WHERE id=$3`, [
+		await connection.query(`UPDATE rentals SET "returnDate"=$1, "delayFee"=$2 WHERE id=$3;`, [
 			returnDate,
 			delayFee,
 			id,
@@ -81,5 +81,16 @@ export async function returnRental(req, res) {
 }
 
 export async function deleteRental(req, res) {
-	res.sendStatus(501);
+	const { id } = req.params;
+	try {
+		const rental = await connection.query(`SELECT * FROM rentals WHERE id=$1;`, [id]);
+
+		if (rental.rows[0].returnDate !== null) return res.sendStatus(400);
+
+		await connection.query(`DELETE FROM rentals WHERE id=$1;`, [id]);
+		res.sendStatus(200);
+	} catch (err) {
+		console.log(err);
+		res.sendStatus(500);
+	}
 }

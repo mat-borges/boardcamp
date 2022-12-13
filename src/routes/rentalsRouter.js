@@ -12,6 +12,6 @@ const router = Router();
 router.get('/rentals', getRentals);
 router.post('/rentals', rentalSchemaValidation, gameCustomerExists, newRental);
 router.post('/rentals/:id/return', rentalExists, returnRental);
-router.delete('/rentals/:id', deleteRental);
+router.delete('/rentals/:id', rentalExists, deleteRental);
 
 export default router;
