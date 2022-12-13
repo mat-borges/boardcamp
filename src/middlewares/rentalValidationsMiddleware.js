@@ -39,3 +39,18 @@ export async function gameCustomerExists(req, res, next) {
 		res.sendStatus(500);
 	}
 }
+
+export async function rentalExists(req, res, next) {
+	const { id } = req.params;
+	try {
+		const rentalExists = await connection.query(`SELECT * FROM rentals WHERE id=$1`, [id]);
+		if (!rentalExists.rows[0]) {
+			return res.sendStatus(404);
+		} else {
+			next();
+		}
+	} catch (err) {
+		console.log(err);
+		res.sendStatus(500);
+	}
+}
