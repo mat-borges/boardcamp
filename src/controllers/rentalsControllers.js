@@ -4,9 +4,92 @@ import dayjs from 'dayjs';
 export async function getRentals(req, res) {
 	const customerId = Number(req.query.customerId);
 	const gameId = Number(req.query.gameId);
+	const offset = parseInt(req.query.offset);
+	const limit = parseInt(req.query.limit);
+
+	function queryStrings() {
+		switch (customerId || gameId || limit || offset) {
+			case customerId && gameId && limit && offset:
+				return {
+					string: `WHERE rentals."customerId" = $1 AND rentals."gameId" = $2 ORDER BY id LIMIT $3 OFFSET $4;`,
+					params: [customerId, gameId, limit, offset],
+				};
+			case customerId && gameId && limit:
+				return {
+					string: `WHERE rentals."customerId" = $1 AND rentals."gameId" = $2 ORDER BY id LIMIT $3 ;`,
+					params: [customerId, gameId, limit],
+				};
+			case customerId && gameId && offset:
+				return {
+					string: `WHERE rentals."customerId" = $1 AND rentals."gameId" = $2 ORDER BY id OFFSET $3 ;`,
+					params: [customerId, gameId, offset],
+				};
+			case customerId && gameId:
+				return {
+					string: `WHERE rentals."customerId" = $1 AND rentals."gameId" = $2 ORDER BY id;`,
+					params: [customerId, gameId],
+				};
+			case customerId && limit && offset:
+				return {
+					string: `WHERE rentals."customerId" = $1 ORDER BY id LIMIT $2 OFFSET $3;`,
+					params: [customerId, limit, offset],
+				};
+			case customerId && limit:
+				return {
+					string: `WHERE rentals."customerId" = $1 ORDER BY id LIMIT $2 ;`,
+					params: [customerId, limit],
+				};
+			case customerId && offset:
+				return {
+					string: `WHERE rentals."customerId" = $1 ORDER BY id OFFSET $2 ;`,
+					params: [customerId, offset],
+				};
+			case customerId:
+				return {
+					string: `WHERE rentals."customerId" = $1 ORDER BY id;`,
+					params: [customerId],
+				};
+			case gameId && limit && offset:
+				return {
+					string: `WHERE rentals."gameId" = $1 ORDER BY id LIMIT $2 OFFSET $3;`,
+					params: [gameId, limit, offset],
+				};
+			case gameId && limit:
+				return {
+					string: `WHERE rentals."gameId" = $1 ORDER BY id LIMIT $2 ;`,
+					params: [gameId, limit],
+				};
+			case gameId && offset:
+				return {
+					string: `WHERE rentals."gameId" = $1 ORDER BY id OFFSET $2 ;`,
+					params: [gameId, offset],
+				};
+			case gameId:
+				return {
+					string: `WHERE rentals."gameId" = $1 ORDER BY id;`,
+					params: [gameId],
+				};
+			case limit && offset:
+				return {
+					string: `ORDER BY id LIMIT $1 OFFSET $2;`,
+					params: [limit, offset],
+				};
+			case limit:
+				return {
+					string: `ORDER BY id LIMIT $1 ;`,
+					params: [limit],
+				};
+			case offset:
+				return {
+					string: `ORDER BY id OFFSET $1 ;`,
+					params: [offset],
+				};
+			default:
+				return { string: ``, params: [] };
+		}
+	}
 
 	try {
-		let rentals;
 		const query = `SELECT rentals.*,
 					json_build_object('id',customers.id,'name',customers.name) AS customer,
 				 	json_build_object('id',games.id,'name', games.name,'categoryId', games."categoryId", 'categoryName', categories.name) AS game
@@ -14,18 +97,9 @@ export async function getRentals(req, res) {
 						JOIN customers ON rentals."customerId"=customers.id
 						JOIN games ON rentals."gameId"=games.id
 						JOIN categories ON games."categoryId" = categories.id`;
-		if (customerId && gameId) {
-			rentals = await connection.query(
-				`${query} WHERE rentals."customerId" = $1 AND rentals."gameId" = $2;`,
-				[customerId, gameId]
-			);
-		} else if (customerId) {
-			rentals = await connection.query(`${query} WHERE "customerId"=$1;`, [customerId]);
-		} else if (gameId) {
-			rentals = await connection.query(`${query} WHERE "gameId"=$1;`, [gameId]);
-		} else {
-			rentals = await connection.query(`${query};`);
-		}
+
+		const rentals = await connection.query(`${query} ${queryStrings().string}`, queryStrings().params);
+
 		res.send(rentals.rows);
 	} catch (err) {
 		console.log(err);
