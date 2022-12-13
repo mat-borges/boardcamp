@@ -29,17 +29,17 @@ export async function getGames(req, res) {
 				};
 			case limit && offset:
 				return {
-					string: `ORDER BY id LIMIT $1 OFFSET $2;`,
+					string: `SELECT * FROM games ORDER BY id LIMIT $1 OFFSET $2;`,
 					params: [limit, offset],
 				};
 			case limit:
 				return {
-					string: `ORDER BY id LIMIT $1 ;`,
+					string: `SELECT * FROM games ORDER BY id LIMIT $1 ;`,
 					params: [limit],
 				};
 			case offset:
 				return {
-					string: `ORDER BY id OFFSET $1 ;`,
+					string: `SELECT * FROM games ORDER BY id OFFSET $1 ;`,
 					params: [offset],
 				};
 			default:
