@@ -2,14 +2,54 @@ import { connection } from '../db/db.js';
 
 export async function getGames(req, res) {
 	const { name } = req.query;
-	try {
-		let games;
-		if (name) {
-			const filter = `${name}%`;
-			games = await connection.query('SELECT * FROM games WHERE name ILIKE $1;', [filter]);
-		} else {
-			games = await connection.query('SELECT * FROM games;');
+	const limit = parseInt(req.query.limit);
+	const offset = parseInt(req.query.offset);
+
+	function queryStrings() {
+		switch (name || limit || offset) {
+			case name && limit && offset:
+				return {
+					string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2 OFFSET $3;`,
+					params: [name, limit, offset],
+				};
+			case name && limit:
+				return {
+					string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2;`,
+					params: [name, limit],
+				};
+			case name && offset:
+				return {
+					string: `SELECT * FROM games WHERE name ILIKE $1 OFFSET $2;`,
+					params: [name, offset],
+				};
+			case name:
+				return {
+					string: `SELECT * FROM games WHERE name ILIKE $1;`,
+					params: [name],
+				};
+			case limit && offset:
+				return {
+					string: `ORDER BY id LIMIT $1 OFFSET $2;`,
+					params: [limit, offset],
+				};
+			case limit:
+				return {
+					string: `ORDER BY id LIMIT $1 ;`,
+					params: [limit],
+				};
+			case offset:
+				return {
+					string: `ORDER BY id OFFSET $1 ;`,
+					params: [offset],
+				};
+			default:
+				return { string: `SELECT * FROM games ORDER BY id;`, params: [] };
 		}
+	}
+
+	try {
+		const games = await connection.query(`${queryStrings().string}`, queryStrings().params);
+
 		res.send(games.rows);
 	} catch (err) {
 		console.log(err);

@@ -4,7 +4,7 @@ import {
 	getCustomers,
 	newCustomer,
 	updateCustomer,
-} from '../controllers/customersControllers.js';
+} from '../controllers/customersController.js';
 
 import { Router } from 'express';
 

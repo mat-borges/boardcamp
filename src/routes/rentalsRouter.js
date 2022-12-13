@@ -1,4 +1,4 @@
-import { deleteRental, getRentals, newRental, returnRental } from '../controllers/rentalsControllers.js';
+import { deleteRental, getRentals, newRental, returnRental } from '../controllers/rentalsController.js';
 import {
 	gameCustomerExists,
 	rentalExists,
