@@ -38,14 +38,27 @@ export async function newRental(req, res) {
 	const today = dayjs().format('YYYY-MM-DD');
 
 	try {
-		const pricePerDay = await connection.query(`SELECT "pricePerDay" FROM games WHERE id=$1`, [gameId]);
-		const originalPrice = pricePerDay.rows[0].pricePerDay;
-
-		await connection.query(
-			`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1, $2, $3, $4, $5, $6, $7);`,
-			[customerId, gameId, today, daysRented, null, originalPrice, null]
+		const game = await connection.query(
+			`SELECT "pricePerDay", "stockTotal"
+				FROM games
+				WHERE id=$1`,
+			[gameId]
 		);
-		res.sendStatus(201);
+		const stockTotal = game.rows[0].stockTotal;
+		const gameRentals = await connection.query(`SELECT * FROM rentals WHERE "gameId"=$1`, [gameId]);
+		const rentedGames = gameRentals.rows.filter((game) => game.returnDate === null).length;
+
+		if (rentedGames < stockTotal) {
+			const originalPrice = game.rows[0].pricePerDay * daysRented;
+
+			await connection.query(
+				`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+				[customerId, gameId, today, daysRented, null, originalPrice, null]
+			);
+			res.sendStatus(201);
+		} else {
+			return res.sendStatus(400);
+		}
 	} catch (err) {
 		console.log(err);
 		res.sendStatus(500);
