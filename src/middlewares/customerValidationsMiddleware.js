@@ -1,15 +1,23 @@
 import { cleanStringData } from '../server.js';
 import { connection } from '../db/db.js';
 import { customerSchema } from '../models/customerSchema.js';
+import dayjs from 'dayjs';
 
 export async function validateCustomerSchema(req, res, next) {
 	const { name, phone, cpf, birthday } = req.body;
+	let newBirthday;
+
+	if (birthday.length > 10) {
+		newBirthday = dayjs(cleanStringData(birthday)).format('YYYY-MM-DD');
+	} else {
+		newBirthday = cleanStringData(birthday);
+	}
 
 	const customer = {
 		name: cleanStringData(name),
 		phone: cleanStringData(phone).replace(/[^\w\s]/gi, ''),
 		cpf: cleanStringData(cpf).replace(/[^\w\s]/gi, ''),
-		birthday: cleanStringData(birthday).split('/').reverse().join('-'),
+		birthday: newBirthday.split('/').reverse().join('-'),
 	};
 
 	const { error } = customerSchema.validate(customer, { abortEarly: false });
