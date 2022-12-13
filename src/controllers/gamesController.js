@@ -2,14 +2,56 @@ import { connection } from '../db/db.js';
 
 export async function getGames(req, res) {
 	const { name } = req.query;
-	try {
-		let games;
+	const limit = parseInt(req.query.limit);
+	const offset = parseInt(req.query.offset);
+
+	function queryStrings() {
+		let filter;
 		if (name) {
-			const filter = `${name}%`;
-			games = await connection.query('SELECT * FROM games WHERE name ILIKE $1;', [filter]);
-		} else {
-			games = await connection.query('SELECT * FROM games;');
+			filter = `${name}%`;
 		}
+		if (name && limit && offset) {
+			return {
+				string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2 OFFSET $3;`,
+				params: [filter, limit, offset],
+			};
+		} else if (name && limit) {
+			return {
+				string: `SELECT * FROM games WHERE name ILIKE $1 LIMIT $2;`,
+				params: [filter, limit],
+			};
+		} else if (name && offset) {
+			return {
+				string: `SELECT * FROM games WHERE name ILIKE $1 OFFSET $2;`,
+				params: [filter, offset],
+			};
+		} else if (name) {
+			return {
+				string: `SELECT * FROM games WHERE name ILIKE $1;`,
+				params: [filter],
+			};
+		} else if (limit && offset) {
+			return {
+				string: `SELECT * FROM games ORDER BY id LIMIT $1 OFFSET $2;`,
+				params: [limit, offset],
+			};
+		} else if (limit) {
+			return {
+				string: `SELECT * FROM games ORDER BY id LIMIT $1 ;`,
+				params: [limit],
+			};
+		} else if (offset) {
+			return {
+				string: `SELECT * FROM games ORDER BY id OFFSET $1 ;`,
+				params: [offset],
+			};
+		} else {
+			return { string: `SELECT * FROM games ORDER BY id;`, params: [] };
+		}
+	}
+
+	try {
+		const games = await connection.query(`${queryStrings().string}`, queryStrings().params);
 		res.send(games.rows);
 	} catch (err) {
 		console.log(err);
